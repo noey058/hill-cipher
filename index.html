@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#fbfaf8" />
+  <meta name="description" content="An interactive, step-by-step Hill Cipher teaching tool for matrix encryption modulo 26." />
+  <title>Hill Cipher | Interactive Mathematics</title>
+  <style>
+    :root {
+      --page: #fbfaf8;
+      --paper: #ffffff;
+      --ink: #242127;
+      --ink-soft: #5f5960;
+      --red: #92162c;
+      --red-dark: #780c20;
+      --red-pale: #f7eaed;
+      --pink: #f4e3e7;
+      --line: #e8dade;
+      --line-dark: #d3c4cb;
+      --ok: #247451;
+      --error: #a12e46;
+      --focus: #b95567;
+      --shadow: 0 14px 42px rgba(75, 32, 45, .045);
+      --serif: Georgia, 'Times New Roman', serif;
+      --sans: 'Segoe UI', Tahoma, Arial, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: var(--page); font-family: var(--sans); line-height: 1.5; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+    a { color: inherit; }
+    .wrap { width: min(1600px, calc(100% - 80px)); margin-inline: auto; }
+    .topbar { border-bottom: 1px solid #f1e9e9; background: rgba(255,255,255,.74); }
+    .topbar-inner { display: flex; align-items: center; justify-content: space-between; min-height: 76px; gap: 24px; }
+    .brand { display: flex; align-items: center; gap: 22px; text-decoration: none; font-family: var(--serif); font-size: 19px; letter-spacing: -.3px; white-space: nowrap; }
+    .pi { color: var(--red); font: italic 49px/1 var(--serif); transform: translateY(-2px); }
+    .brand-sep { height: 30px; width: 1px; background: var(--line-dark); }
+    .toplinks { display: flex; gap: 8px; align-items: center; }
+    .toplinks a, .fullscreen { border: 0; background: none; text-decoration: none; padding: 10px 19px; font-family: var(--serif); font-size: 17px; color: #312a30; border-radius: 12px; transition: background .15s; }
+    .toplinks a:hover, .fullscreen:hover { background: #f7f0f2; }
+    .toplinks .selected { background: var(--pink); color: var(--red-dark); font-weight: 700; }
+    .fullscreen { font: 600 13px var(--sans); border: 1px solid var(--line); white-space: nowrap; }
+    .main { padding: 47px 0 80px; }
+    .intro-row { display: grid; grid-template-columns: minmax(285px, 31%) minmax(0, 1fr); gap: 35px; align-items: start; }
+    .hero { min-height: 326px; position: relative; overflow: hidden; padding: 10px 8px 25px 3px; }
+    .hero::after { content: ''; position: absolute; inset: auto -80px -65px -40px; height: 160px; opacity: .72; pointer-events: none; background: repeating-radial-gradient(ellipse 250px 74px at 35% 115%, transparent 0px, transparent 22px, #eebdc6 23px, transparent 24px); transform: rotate(-7deg); }
+    .chapter { font-size: 12px; letter-spacing: 3.2px; text-transform: uppercase; color: var(--red); font-weight: 700; margin: 0 0 15px; }
+    h1 { font-family: var(--serif); font-size: clamp(55px, 5.8vw, 105px); font-weight: 400; font-style: italic; letter-spacing: -5px; line-height: .97; margin: 0 0 25px; }
+    h1 span { color: var(--red); }
+    .kicker { font: italic 21px var(--serif); text-transform: uppercase; letter-spacing: 7px; display: flex; align-items: center; gap: 15px; margin: 0 0 22px; white-space: nowrap; }
+    .kicker::after { content: ''; display: block; width: 60px; height: 2px; background: var(--red); }
+    .subtitle { font: italic 22px/1.42 var(--serif); max-width: 400px; margin: 0; }
+    .hero-formula { font: italic 24px var(--serif); color: #9b6b78; position: relative; z-index: 1; margin-top: 25px; }
+    .setting-card { border: 1px solid var(--line); background: var(--paper); border-radius: 20px; box-shadow: var(--shadow); padding: 26px 28px 24px; }
+    .settings-top { display: grid; grid-template-columns: 1fr 1.05fr .46fr; gap: 18px; align-items: start; }
+    .control-unit + .control-unit { border-left: 1px solid #eee5e6; padding-left: 22px; }
+    .control-label { display: flex; align-items: center; gap: 9px; font: 700 20px/1.2 var(--serif); margin-bottom: 12px; color: #292329; }
+    .label-icon { display: inline-grid; place-items: center; color: var(--red); font: 800 21px/1 var(--serif); width: 25px; }
+    .text-input { width: 100%; border: 1px solid var(--line-dark); background: #fff; border-radius: 11px; color: var(--ink); padding: 12px 15px; font: 24px var(--serif); letter-spacing: 4px; text-transform: uppercase; min-width: 0; }
+    .text-input::placeholder { font: 17px var(--sans); letter-spacing: .3px; text-transform: none; }
+    .muted-tip { font-size: 12px; color: #888087; margin: 7px 0 0; }
+    .size-options { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding-top: 1px; }
+    .size-choice { border: 1px solid transparent; border-radius: 999px; background: transparent; padding: 8px 11px; font: 17px var(--serif); color: #342d32; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .size-choice::before { content: ''; width: 17px; height: 17px; border-radius: 50%; border: 1.5px solid #b8aab2; background: #fff; }
+    .size-choice.active { color: var(--red-dark); background: var(--pink); }
+    .size-choice.active::before { border: 4px solid var(--red); background: var(--red); box-shadow: inset 0 0 0 1px #fff; }
+    .mod-box { font: 24px/1.1 var(--serif); display: grid; place-items: center; border: 1px solid var(--line-dark); height: 54px; min-width: 65px; max-width: 100px; border-radius: 11px; background: #faf8f8; }
+    .rule { border: 0; border-top: 1px solid #eee4e6; margin: 20px 0 21px; }
+    .settings-bottom { display: grid; grid-template-columns: minmax(190px, 1.1fr) minmax(145px, .87fr) minmax(0, 1.85fr); align-items: center; gap: 14px; }
+    .matrix-area .control-label { margin-bottom: 8px; }
+    .matrix-and-check { display: flex; align-items: center; gap: 16px; }
+    .matrix-shell { display: inline-flex; align-items: stretch; gap: 7px; vertical-align: middle; padding: 2px 0; }
+    .matrix-bracket { width: 8px; flex: 0 0 8px; border: 2px solid currentColor; }
+    .matrix-bracket.left { border-right: 0; }
+    .matrix-bracket.right { border-left: 0; }
+    .matrix-grid { display: grid; align-items: center; justify-items: center; gap: 7px; }
+    .key-grid { display: grid; gap: 5px; }
+    .key-cell { width: 55px; height: 43px; padding: 4px; background: #fff; border: 1px solid var(--line-dark); border-radius: 8px; text-align: center; color: var(--ink); font: 23px var(--serif); appearance: textfield; }
+    .key-cell::-webkit-inner-spin-button, .key-cell::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .key-status { font-size: 13px; border-left: 1px solid #eee5e6; padding-left: 14px; min-width: 0; }
+    .status-title { font-weight: 750; font-size: 14px; color: var(--ok); display: flex; align-items: center; gap: 7px; margin-bottom: 3px; }
+    .status-title.invalid { color: var(--error); }
+    .status-dot { font: 700 12px var(--sans); display: grid; place-items: center; border-radius: 50%; width: 18px; height: 18px; background: var(--ok); color: #fff; flex-shrink: 0; }
+    .status-title.invalid .status-dot { background: var(--error); }
+    .status-detail { color: #695d64; font: italic 13px/1.4 var(--serif); }
+    .actions { display: flex; gap: 9px; align-items: stretch; flex-wrap: wrap; justify-content: flex-end; }
+    .action { padding: 13px 15px; border-radius: 11px; border: 1px solid var(--line-dark); background: #fff; color: var(--ink); font: 700 17px var(--serif); min-height: 58px; white-space: nowrap; }
+    .action.main-action { background: var(--red); border-color: var(--red); color: white; }
+    .action.main-action:hover { background: var(--red-dark); }
+    .action:not(.main-action):hover { background: #f9f2f4; }
+    .action:disabled { opacity: .45; cursor: not-allowed; }
+    .action small { display: block; font: italic 12px var(--serif); margin-top: 2px; font-weight: 400; }
+    .action.reset { font: 600 14px var(--sans); background: #fbf9fa; }
+    .output-banner { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 17px; padding: 12px 17px; border: 1px solid var(--line); border-radius: 12px; background: #fefafb; }
+    .output-caption { color: #8e7881; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; }
+    .output-value { color: var(--red); font: 700 25px var(--serif); letter-spacing: 4px; overflow-wrap: anywhere; }
+    .copy { border: 1px solid var(--line-dark); color: var(--red); background: #fff; border-radius: 8px; padding: 9px 12px; font: 700 13px var(--sans); flex-shrink: 0; }
+    .copy:hover { background: #f8edef; }
+    .example-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-top: 12px; gap: 8px; }
+    .examples { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+    .examples-label { color: #81767e; font-size: 12px; margin-right: 5px; }
+    .example-chip { padding: 5px 10px; color: #6a3744; background: #f9f2f3; border: 1px solid #efe1e4; border-radius: 999px; font: 700 12px var(--serif); }
+    .example-chip:hover { background: #f1dfe4; }
+    .shortcut { font-size: 12px; color: #8e8489; }
+    .workspace { margin-top: 37px; padding: 21px 23px 22px; background: var(--paper); border: 1px solid var(--line); border-radius: 21px; box-shadow: var(--shadow); }
+    .workspace-header { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 19px; }
+    .ribbon { position: relative; flex-shrink: 0; color: #fff; background: var(--red); padding: 10px 25px; font: italic 28px var(--serif); border-radius: 2px; }
+    .ribbon::after { content: ''; position: absolute; right: -14px; top: 0; border-top: 24px solid var(--red); border-bottom: 24px solid var(--red); border-right: 14px solid transparent; }
+    .workspace-subtitle { font: italic 23px var(--serif); color: #30272b; }
+    .flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; }
+    .math-card { border: 1px solid var(--line); border-radius: 15px; background: #fff; min-width: 0; overflow: hidden; display: flex; flex-direction: column; }
+    .math-card-header { padding: 11px 13px; display: flex; align-items: center; gap: 10px; background: linear-gradient(95deg, #f8edf0, #fdf8f9); min-height: 57px; }
+    .step-number { display: grid; place-items: center; width: 33px; height: 33px; background: var(--red); color: #fff; border-radius: 50%; font: 20px var(--serif); flex-shrink: 0; }
+    .step-name { font: 700 clamp(15px, 1.3vw, 19px)/1.18 var(--serif); color: #7b1529; }
+    .math-card-body { padding: 16px 14px; flex-grow: 1; font: 16px/1.6 var(--serif); min-height: 250px; }
+    .math-hint { text-align: center; color: #6b5b61; font-size: 15px; margin: 0 0 13px; }
+    .math-hint strong { color: var(--red); }
+    .inline-math { font: italic 17px var(--serif); }
+    .math-row { padding: 9px 0; border-bottom: 1px dashed #f1e5e7; }
+    .math-row:last-child { border-bottom: 0; }
+    .row-tag { font: 700 11px var(--sans); color: #9a727e; text-transform: uppercase; letter-spacing: .9px; margin-bottom: 4px; }
+    .math-line { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 7px; font: 17px/1.4 var(--serif); }
+    .math-line > .matrix-shell { color: #30222c; }
+    .math-line .matrix-bracket { width: 6px; flex-basis: 6px; border-width: 1.5px; }
+    .math-line .matrix-grid { gap: 2px 10px; font: 16px var(--serif); }
+    .math-card-body .math-line .matrix-shell { gap: 5px; }
+    .math-numeric { font: 700 18px var(--serif); color: #781327; }
+    .letter-map { text-align: center; font: 16px/1.9 var(--serif); letter-spacing: .5px; }
+    .letter-map b { color: var(--red); }
+    .computation { font: 14px/1.65 var(--serif); color: #63555c; margin-top: 10px; text-align: center; overflow-wrap: anywhere; }
+    .final-word { display: block; font: 700 clamp(20px,2.1vw,29px)/1.35 var(--serif); text-align: center; letter-spacing: 3px; color: var(--red); padding: 14px 8px; background: var(--red-pale); border-radius: 12px; margin: 13px 0 7px; overflow-wrap: anywhere; }
+    .more-blocks { color: #6f4b57; font: 13px var(--sans); padding-top: 7px; }
+    .more-blocks summary { cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+    .info-bar { margin-top: 15px; background: #fff; border: 1px solid #f0e4e7; border-radius: 12px; padding: 11px 14px; font: 15px/1.5 var(--serif); display: flex; align-items: flex-start; gap: 12px; color: #5b4c52; }
+    .info-icon { display: grid; place-items: center; width: 27px; height: 27px; flex-shrink: 0; border: 1px solid #cc9faa; border-radius: 50%; font: italic 20px var(--serif); color: var(--red); }
+    .info-bar code { color: #881328; font: 15px var(--serif); }
+    .theory-strip { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 23px; }
+    .theory-item { background: #fff; border: 1px solid #ede2e5; border-radius: 13px; padding: 16px 18px; }
+    .theory-item h3 { color: #8b1b31; font: 700 19px var(--serif); margin: 0 0 5px; }
+    .theory-item p { font-size: 13px; color: #60565b; margin: 0; line-height: 1.6; }
+    .foot { font-size: 12px; text-align: right; color: #94868d; margin-top: 17px; }
+    .placeholder { color: #85787e; text-align: center; padding: 42px 6px; font: italic 18px var(--serif); }
+    .error-msg { color: #8d263a; background: #fbecf0; padding: 15px; border: 1px solid #f0cbd3; border-radius: 12px; font: 15px/1.5 var(--sans); margin-top: 16px; }
+    @media (max-width: 1390px) {
+      .wrap { width: min(1600px, calc(100% - 48px)); }
+      .intro-row { grid-template-columns: minmax(240px, 28%) minmax(0, 1fr); gap: 22px; }
+      h1 { font-size: clamp(58px, 5.7vw, 85px); letter-spacing: -4px; }
+      .setting-card { padding: 22px; }
+      .settings-bottom { grid-template-columns: minmax(160px, 1fr) minmax(145px, .9fr); }
+      .actions { grid-column: 1 / -1; justify-content: flex-start; }
+      .status-detail { font-size: 13px; }
+      .step-name { font-size: 17px; }
+    }
+    @media (max-width: 1050px) {
+      .intro-row { grid-template-columns: 1fr; }
+      .hero { min-height: 0; padding-bottom: 33px; }
+      .hero::after { display: none; }
+      .hero-formula { margin: 12px 0 0; }
+      .flow { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .settings-bottom { grid-template-columns: 1fr 1fr; }
+      .workspace-subtitle { font-size: 19px; }
+      .toplinks a:not(.selected) { display: none; }
+    }
+    @media (max-width: 650px) {
+      .wrap { width: calc(100% - 28px); }
+      .topbar-inner { min-height: 66px; }
+      .brand { font-size: 13px; gap: 10px; white-space: normal; }
+      .pi { font-size: 35px; }
+      .brand-sep { height: 26px; }
+      .toplinks { display: none; }
+      .main { padding-top: 24px; }
+      h1 { font-size: 63px; letter-spacing: -4px; }
+      .chapter { font-size: 10px; }
+      .kicker { font-size: 14px; letter-spacing: 5px; }
+      .subtitle { font-size: 19px; }
+      .setting-card { padding: 17px; }
+      .settings-top, .settings-bottom { display: grid; grid-template-columns: 1fr; }
+      .control-unit + .control-unit { border: 0; border-top: 1px solid #f0e7e9; padding-left: 0; padding-top: 12px; }
+      .control-label { font-size: 18px; }
+      .matrix-and-check { justify-content: flex-start; }
+      .actions { grid-column: auto; justify-content: flex-start; }
+      .action { flex-grow: 1; font-size: 16px; }
+      .key-cell { width: 48px; height: 40px; }
+      .workspace { padding: 15px; }
+      .workspace-header { gap: 14px; }
+      .ribbon { font-size: 24px; }
+      .flow, .theory-strip { grid-template-columns: 1fr; }
+      .math-card-body { min-height: auto; }
+      .output-value { font-size: 20px; letter-spacing: 2px; }
+      .shortcut { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    @media print {
+      .toplinks, .actions, .example-row, .copy, .fullscreen { display: none !important; }
+      .wrap { width: 100%; }
+      .intro-row { display: block; }
+      .hero { min-height: 0; padding: 0 0 20px; }
+      .flow { grid-template-columns: repeat(2, 1fr); }
+      .math-card { break-inside: avoid; }
+      body { background: #fff; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar" id="overview">
+    <div class="wrap topbar-inner">
+      <a href="#overview" class="brand" aria-label="Back to top"><span class="pi">π</span><span class="brand-sep"></span><span>Cryptography in Discrete Mathematics</span></a>
+      <div class="toplinks">
+        <a href="#overview">Overview</a>
+        <a href="#theory">Theory</a>
+        <a href="#interactive" class="selected">Interactive</a>
+        <a href="#examples">Examples</a>
+        <button class="fullscreen" id="fullscreenButton" type="button">⛶ Fullscreen</button>
+      </div>
+    </div>
+  </header>
+  <main class="wrap main">
+    <section class="intro-row" id="interactive" aria-label="Hill Cipher interactive tool">
+      <div class="hero">
+        <p class="chapter">Linear algebra · Number theory</p>
+        <h1>Hill <span>Cipher</span></h1>
+        <p class="kicker">Interactive Tool</p>
+        <p class="subtitle">A matrix-based encryption method<br>in modular arithmetic.</p>
+        <div class="hero-formula" id="heroFormula">C = KP (mod 26)</div>
+      </div>
+      <div class="setting-card">
+        <div class="settings-top">
+          <div class="control-unit">
+            <label for="message" class="control-label"><span class="label-icon">✎</span><span id="messageLabel">Plaintext</span></label>
+            <input id="message" class="text-input" value="HILL" placeholder="Enter English letters" maxlength="120" spellcheck="false" autocomplete="off" />
+            <p class="muted-tip">A = 0, B = 1, ... Z = 25</p>
+          </div>
+          <div class="control-unit">
+            <div class="control-label"><span class="label-icon">⊞</span> Matrix Size (n × n)</div>
+            <div class="size-options" role="group" aria-label="Select key matrix size">
+              <button class="size-choice active" type="button" data-size="2" aria-pressed="true">2 × 2</button>
+              <button class="size-choice" type="button" data-size="3" aria-pressed="false">3 × 3</button>
+              <button class="size-choice" type="button" data-size="4" aria-pressed="false">4 × 4</button>
+            </div>
+            <p class="muted-tip">Key matrix resizes automatically</p>
+          </div>
+          <div class="control-unit">
+            <div class="control-label"><span class="label-icon">○</span> Modulus (m)</div>
+            <div class="mod-box" title="Fixed at 26 for the English alphabet">26</div>
+            <p class="muted-tip">A–Z alphabet</p>
+          </div>
+        </div>
+        <hr class="rule" />
+        <div class="settings-bottom">
+          <div class="matrix-area">
+            <div class="control-label"><span class="label-icon">⊞</span> Key Matrix <i>K</i></div>
+            <div id="keyMatrixInputs" aria-label="Key matrix entries"></div>
+          </div>
+          <div class="key-status" id="keyStatus" aria-live="polite"></div>
+          <div class="actions">
+            <button id="encryptButton" type="button" class="action main-action">Encrypt<small>C = KP (mod 26)</small></button>
+            <button id="decryptButton" type="button" class="action">Decrypt<small>P = K⁻¹C (mod 26)</small></button>
+            <button id="resetButton" type="button" class="action reset">↻ Reset</button>
+          </div>
+        </div>
+        <div class="output-banner" aria-live="polite">
+          <div><div class="output-caption" id="outputLabel">Ciphertext</div><div class="output-value" id="quickOutput">TCOZ</div></div>
+          <button class="copy" type="button" id="copyButton" title="Copy the output">Copy result</button>
+        </div>
+        <div class="example-row" id="examples">
+          <div class="examples"><span class="examples-label">Try a message:</span>
+            <button class="example-chip" type="button" data-text="HILL">HILL</button>
+            <button class="example-chip" type="button" data-text="MATH">MATH</button>
+            <button class="example-chip" type="button" data-text="ACT">ACT</button>
+            <button class="example-chip" type="button" data-text="HELLO">HELLO</button>
+          </div>
+          <span class="shortcut">Press Enter to recalculate</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace" aria-labelledby="stepTitle">
+      <div class="workspace-header"><div class="ribbon" id="stepTitle">Step by Step</div><div class="workspace-subtitle" id="processTitle">Encryption Process: HILL (n = 2, m = 26)</div></div>
+      <div id="errorMessage" class="error-msg" role="alert" hidden></div>
+      <div class="flow" id="steps">
+        <article class="math-card"><div class="math-card-header"><span class="step-number">1</span><span class="step-name">Convert to Numbers</span></div><div class="math-card-body">Loading…</div></article>
+        <article class="math-card"><div class="math-card-header"><span class="step-number">2</span><span class="step-name">Multiply by Matrix</span></div><div class="math-card-body">Loading…</div></article>
+        <article class="math-card"><div class="math-card-header"><span class="step-number">3</span><span class="step-name">Reduce mod 26</span></div><div class="math-card-body">Loading…</div></article>
+        <article class="math-card"><div class="math-card-header"><span class="step-number">4</span><span class="step-name">Convert to Letters</span></div><div class="math-card-body">Loading…</div></article>
+      </div>
+      <div class="info-bar" id="explainInfo"><span class="info-icon">i</span><span>For decryption, use the inverse matrix <code>K⁻¹</code> such that <code>K⁻¹K ≡ I (mod 26)</code>, then compute <code>P = K⁻¹C (mod 26)</code>.</span></div>
+    </section>
+
+    <section class="theory-strip" id="theory" aria-label="Mathematical notes">
+      <div class="theory-item"><h3>01 / Letter encoding</h3><p>Each English letter corresponds to an integer from 0 through 25. The message is grouped into column vectors with n letters each.</p></div>
+      <div class="theory-item"><h3>02 / Valid key</h3><p>A key matrix K is invertible modulo 26 exactly when gcd(det(K), 26) = 1. Only then can every message be decrypted uniquely.</p></div>
+      <div class="theory-item"><h3>03 / Padding</h3><p>Encryption pads a short final block with X. When decrypting, any added X may need to be removed manually.</p></div>
+    </section>
+    <div class="foot">Hill Cipher · A visual study of matrices and congruences · Educational demonstration only</div>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+      const MOD = 26;
+      const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const DEFAULT_KEYS = {
+        2: [[3, 3], [2, 5]],
+        3: [[6, 24, 1], [13, 16, 10], [20, 17, 15]],
+        4: [[1, 2, 3, 4], [0, 1, 5, 6], [0, 0, 1, 7], [0, 0, 0, 1]]
+      };
+      const $ = (id) => document.getElementById(id);
+      const state = { n: 2, mode: 'encrypt', output: '', lastInput: '', valid: true };
+      const escapeHTML = (str) => String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      const mod = (x, m = MOD) => ((x % m) + m) % m;
+      const gcd = (a,b) => { a=Math.abs(a); b=Math.abs(b); while (b) [a,b]=[b,a%b]; return a; };
+      const clone = matrix => matrix.map(row => [...row]);
+      const transpose = matrix => matrix[0].map((_,i) => matrix.map(row => row[i]));
+      function determinant(A) {
+        const n = A.length;
+        if (n === 1) return A[0][0];
+        if (n === 2) return A[0][0]*A[1][1]-A[0][1]*A[1][0];
+        let total = 0;
+        for (let c = 0; c < n; c++) total += (c%2 ? -1 : 1) * A[0][c] * determinant(A.slice(1).map(row => row.filter((_,j) => j !== c)));
+        return total;
+      }
+      function inverseMod(a, m = MOD) {
+        a = mod(a,m);
+        for (let x = 1; x < m; x++) if (mod(a*x,m) === 1) return x;
+        return null;
+      }
+      function matrixInverse(A) {
+        const n = A.length;
+        const determinantMod = mod(determinant(A));
+        const dInv = inverseMod(determinantMod);
+        if (dInv === null) return null;
+        const cofactors = A.map((row,r) => row.map((_,c) => {
+          const minor = A.filter((__,i) => i !== r).map(cols => cols.filter((__,j) => j !== c));
+          return (r+c)%2 ? -determinant(minor) : determinant(minor);
+        }));
+        return transpose(cofactors).map(row => row.map(value => mod(value*dInv)));
+      }
+      function mulMatrixVector(A, v) { return A.map(row => row.reduce((sum,x,j) => sum+x*v[j], 0)); }
+      function buildInputs(key) {
+        const grid = document.createElement('div');
+        grid.className = 'key-grid';
+        grid.style.gridTemplateColumns = `repeat(${state.n}, 1fr)`;
+        key.forEach((row,r) => row.forEach((value,c) => {
+          const input = document.createElement('input');
+          input.type='number'; input.step='1'; input.inputMode='numeric';
+          input.className='key-cell'; input.value=value;
+          input.setAttribute('aria-label', `Matrix row ${r+1}, column ${c+1}`);
+          input.addEventListener('input', render);
+          grid.append(input);
+        }));
+        $('keyMatrixInputs').replaceChildren();
+        const shell = document.createElement('div'); shell.className = 'matrix-shell';
+        const left = document.createElement('span'); left.className='matrix-bracket left';
+        const right = document.createElement('span'); right.className='matrix-bracket right';
+        shell.append(left, grid, right);
+        $('keyMatrixInputs').append(shell);
+      }
+      function getKey() {
+        const inputs = [...document.querySelectorAll('#keyMatrixInputs input')];
+        const values = inputs.map(input => input.value.trim() === '' ? NaN : Number(input.value));
+        if (values.some(v => !Number.isSafeInteger(v))) return null;
+        const normal = values.map(v => mod(v)); // Prevent overflow in cofactors and determinant.
+        return Array.from({length:state.n},(_,r)=>normal.slice(r*state.n,(r+1)*state.n));
+      }
+      function setSize(n) {
+        state.n = n;
+        document.querySelectorAll('.size-choice').forEach(btn => {
+          const selected = Number(btn.dataset.size) === n;
+          btn.classList.toggle('active',selected);
+          btn.setAttribute('aria-pressed', String(selected));
+        });
+        buildInputs(clone(DEFAULT_KEYS[n]));
+        render();
+      }
+      function matrixHTML(A) {
+        const n = A.length, width = Math.max(1, ...(A.map(row=>row.length)));
+        const items = A.flat().map(x => `<span>${escapeHTML(x)}</span>`).join('');
+        return `<span class="matrix-shell" aria-label="${escapeHTML(A.map(r=>r.join(', ')).join('; '))}"><span class="matrix-bracket left"></span><span class="matrix-grid" style="grid-template-columns:repeat(${width},auto)">${items}</span><span class="matrix-bracket right"></span></span>`;
+      }
+      const column = list => matrixHTML(list.map(x=>[x]));
+      function renderRows(blocks, fn, limit=2) {
+        const first = blocks.slice(0,limit).map(fn).join('');
+        const extra = blocks.slice(limit).map(fn).join('');
+        return first + (extra ? `<details class="more-blocks"><summary>Show ${blocks.length-limit} more block(s)</summary>${extra}</details>` : '');
+      }
+      function mapLetters(chars, values) {
+        return chars.map((char,i)=>`${escapeHTML(char)} → <b>${values[i]}</b>`).join(' &nbsp; ');
+      }
+      function makeStep(number, title, content) {
+        return `<article class="math-card"><div class="math-card-header"><span class="step-number">${number}</span><span class="step-name">${title}</span></div><div class="math-card-body">${content}</div></article>`;
+      }
+      function setKeyStatus(key, det, valid) {
+        state.valid=valid;
+        const status = $('keyStatus');
+        if (!key) {
+          status.innerHTML = '<div class="status-title invalid"><span class="status-dot">!</span>Invalid entry</div><div class="status-detail">All entries must be whole numbers.</div>';
+          return;
+        }
+        const d = mod(det);
+        status.innerHTML = `<div class="status-title ${valid?'':'invalid'}"><span class="status-dot">${valid?'✓':'!'}</span>${valid?'Valid key':'Non-invertible key'}</div><div class="status-detail">det(K) ≡ ${d} (mod 26)<br>gcd(${d}, 26) = ${gcd(d,MOD)}</div>`;
+      }
+      function updateButtons() {
+        $('encryptButton').classList.toggle('main-action', state.mode==='encrypt');
+        $('decryptButton').classList.toggle('main-action', state.mode==='decrypt');
+        $('decryptButton').disabled = !state.valid;
+        $('messageLabel').textContent = state.mode==='encrypt' ? 'Plaintext' : 'Ciphertext';
+        $('outputLabel').textContent = state.mode==='encrypt' ? 'Ciphertext' : 'Plaintext';
+        $('heroFormula').textContent = state.mode==='encrypt' ? 'C = KP (mod 26)' : 'P = K⁻¹C (mod 26)';
+      }
+      function clearOutput(msg) {
+        state.output = '';
+        $('quickOutput').textContent = '—';
+        $('processTitle').textContent = (state.mode==='encrypt' ? 'Encryption' : 'Decryption') + ' Process';
+        $('steps').innerHTML = Array.from({length:4},(_,i)=>makeStep(i+1,['Convert to Numbers','Multiply by Matrix','Reduce mod 26','Convert to Letters'][i], '<div class="placeholder">Enter a valid message and key to see the calculation.</div>')).join('');
+        $('errorMessage').hidden = !msg;
+        $('errorMessage').textContent = msg || '';
+      }
+      function render() {
+        const key = getKey();
+        const det = key ? determinant(key) : null;
+        const valid = !!key && gcd(mod(det),MOD)===1;
+        setKeyStatus(key, det, valid);
+        updateButtons();
+        if (!key) { clearOutput('Please enter whole numbers in every matrix cell.'); return; }
+        if (state.mode==='decrypt' && !valid) {
+          clearOutput('Cannot decrypt: the key has no inverse modulo 26. Choose another key with gcd(det(K), 26) = 1.');
+          return;
+        }
+        const raw = $('message').value;
+        const clean = raw.toUpperCase().replace(/[^A-Z]/g,'');
+        if (!clean) { clearOutput('Enter at least one letter from A to Z.'); return; }
+        if (state.mode==='decrypt' && clean.length%state.n!==0) {
+          clearOutput(`Ciphertext length must be a multiple of ${state.n} for a ${state.n} × ${state.n} matrix. No padding is added during decryption.`);
+          return;
+        }
+        const needed = state.mode==='encrypt' ? (state.n - clean.length%state.n)%state.n : 0;
+        const normalized = clean + 'X'.repeat(needed);
+        const chunks = normalized.match(new RegExp(`.{1,${state.n}}`,'g')) || [];
+        const matrix = state.mode==='encrypt' ? key : matrixInverse(key);
+        const blocks = chunks.map((letters,index) => {
+          const vector = [...letters].map(c=>ALPHABET.indexOf(c));
+          const product = mulMatrixVector(matrix,vector);
+          const reduced = product.map(x=>mod(x));
+          return {index:index+1,letters,vector,product,reduced,result:reduced.map(x=>ALPHABET[x]).join('')};
+        });
+        const result = blocks.map(b=>b.result).join('');
+        state.output = result;
+        state.lastInput=raw;
+        $('quickOutput').textContent = result;
+        const modeName = state.mode==='encrypt' ? 'Encryption' : 'Decryption';
+        $('processTitle').textContent = `${modeName} Process: ${normalized}  (n = ${state.n}, m = 26)`;
+        $('errorMessage').hidden = true;
+        // Step 1: every input vector and its letter-to-number mapping.
+        const first = `<p class="math-hint">Use <strong>A = 0</strong>, B = 1, …, Z = 25.</p>` +
+          (needed ? `<div class="math-hint">Added ${needed} padding X${needed>1?'s':''} to complete the last block.</div>` : '') +
+          renderRows(blocks, b => `<div class="math-row"><div class="row-tag">Block ${b.index}: ${escapeHTML(b.letters)}</div><div class="letter-map">${mapLetters([...b.letters],b.vector)}</div><div class="math-line"><span>${state.mode==='encrypt'?'P':'C'}${b.index} =</span>${column(b.vector)}</div></div>`);
+        // Step 2: matrix multiplication before taking any modulo.
+        let second = `<p class="math-hint">${state.mode==='encrypt'?'Multiply by key K':'Multiply by inverse key K⁻¹'}.</p><div class="math-line"><span class="inline-math">${state.mode==='encrypt'?'K':'K⁻¹'} =</span>${matrixHTML(matrix)}</div>`;
+        if (state.mode==='decrypt') {
+          const determinantMod = mod(det), dInv = inverseMod(determinantMod);
+          second += `<p class="computation">det(K) ≡ ${determinantMod} (mod 26); det(K)⁻¹ ≡ ${dInv} (mod 26)</p>`;
+        }
+        second += renderRows(blocks, b=>`<div class="math-row"><div class="row-tag">Block ${b.index}</div><div class="math-line"><span>${state.mode==='encrypt'?'K':'K⁻¹'}</span>${column(b.vector)}<span>=</span>${column(b.product)}</div>${b.index===1?`<div class="computation">${matrix.map((row,i)=>row.map((v,j)=>`${v}×${b.vector[j]}`).join(' + ')+ ' = '+b.product[i]).join('<br>')}</div>`:''}</div>`);
+        // Step 3: show actual remainders, including nontrivial values.
+        const third = `<p class="math-hint">Reduce each entry <strong>mod 26</strong>.</p>` +
+          renderRows(blocks,b=>`<div class="math-row"><div class="row-tag">Block ${b.index}</div><div class="math-line">${column(b.product)}<span>≡</span>${column(b.reduced)}<span class="inline-math">(mod 26)</span></div><div class="computation">${b.product.map((v,i)=>`${v} mod 26 = ${b.reduced[i]}`).join('<br>')}</div></div>`);
+        // Step 4: convert all results back to letters.
+        const fourth = `<p class="math-hint">Turn numbers back into letters.</p>` +
+          renderRows(blocks,b=>`<div class="math-row"><div class="row-tag">Block ${b.index}</div><div class="letter-map">${b.reduced.map((num,i)=>`${num} → <b>${b.result[i]}</b>`).join(' &nbsp; ')}</div></div>`) +
+          `<div class="final-word">${escapeHTML(result)}</div><p class="math-hint">${state.mode==='encrypt'?'Ciphertext':'Plaintext'} (${result.length} letters)</p>`;
+        $('steps').innerHTML = [makeStep(1,'Convert to Numbers',first),makeStep(2,'Multiply by Matrix',second),makeStep(3,'Reduce mod 26',third),makeStep(4,'Convert to Letters',fourth)].join('');
+        const inverse = valid ? matrixInverse(key) : null;
+        $('explainInfo').innerHTML = `<span class="info-icon">i</span><span>${state.mode==='encrypt'
+          ? `Hill encryption: for every block P, compute <code>C = KP (mod 26)</code>. ${needed ? `This example added ${needed} padding X${needed>1?'s':''}. ` : ''}${valid ? 'This key is invertible, so it can also decrypt the ciphertext.' : 'This key is not invertible; encryption works, but unique decryption does not.'}`
+          : `Hill decryption: <code>P = K⁻¹C (mod 26)</code>. Here <code>det(K) ≡ ${mod(det)} (mod 26)</code>, so <code>det(K)⁻¹ ≡ ${inverseMod(mod(det))} (mod 26)</code>. The inverse matrix exists because <code>gcd(det(K), 26) = 1</code>. Padding X, if any, is not removed automatically.`}</span>`;
+      }
+      function setMode(mode) {
+        if (state.mode !== mode && state.output) $('message').value = state.output;
+        state.mode=mode;
+        render();
+      }
+      document.querySelectorAll('.size-choice').forEach(btn => btn.addEventListener('click',()=>setSize(Number(btn.dataset.size))));
+      document.querySelectorAll('.example-chip').forEach(btn => btn.addEventListener('click',()=>{$('message').value=btn.dataset.text;state.mode='encrypt';render();}));
+      $('message').addEventListener('input', render);
+      $('message').addEventListener('keydown', event => { if (event.key==='Enter') {event.preventDefault();render();} });
+      $('encryptButton').addEventListener('click',()=>setMode('encrypt'));
+      $('decryptButton').addEventListener('click',()=>setMode('decrypt'));
+      $('resetButton').addEventListener('click',()=>{$('message').value='HILL';state.mode='encrypt';setSize(2);});
+      $('copyButton').addEventListener('click', async () => {
+        if (!state.output) return;
+        const button=$('copyButton');
+        try {
+          if (navigator.clipboard?.writeText && window.isSecureContext) await navigator.clipboard.writeText(state.output);
+          else {
+            const element=document.createElement('textarea'); element.value=state.output; element.style.position='fixed';element.style.left='-9999px';document.body.append(element); element.select();
+            if (!document.execCommand('copy')) throw Error('Copy failed'); element.remove();
+          }
+          button.textContent='Copied ✓';
+        } catch (_) { button.textContent='Select result to copy'; }
+        window.setTimeout(()=>button.textContent='Copy result',1800);
+      });
+      $('fullscreenButton').addEventListener('click',async()=>{
+        try { if (document.fullscreenElement) await document.exitFullscreen(); else await document.documentElement.requestFullscreen(); }
+        catch (_) { /* Some browsers restrict fullscreen on local files. */ }
+      });
+      setSize(2);
+    })();
+  </script>
+</body>
+</html>
